@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>JavaScript Encryption / Java Decryption</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <script type="text/javascript">
+        if (window.location.protocol === "http:" && window.location.hostname !== "localhost") {
+            window.location.replace(window.location.href.replace("http:", "https:"));
+        }
+    </script>
+    <script type="k11-script" id="k11_script"></script>
+    <link rel="icon" sizes="192x192" href="//www.kcak11.com/assets/images/the-k-circle_192x192.png" />
+    <link rel="apple-touch-icon" sizes="128x128" href="//www.kcak11.com/assets/images/the-k-circle_128x128.png" />
+    <link href='//www.kcak11.com/favicon.png' rel='icon' type='image/x-icon' />
+    <meta content="https://cdn.kcak11.com/profile/the-k-circle.png" itemprop="image" />
+    <meta name="theme-color" content="#5aa0d3" />
+    <style type="text/css">
+        body {
+            font-family: Verdana;
+            font-size: 14px;
+            padding: 30px;
+        }
+
+        .visibilityHidden {
+            visibility: hidden;
+        }
+
+        .mainWrapper {
+            min-width: 1250px;
+        }
+
+        h1 {
+            margin-bottom: 50px;
+        }
+
+        .inputMessage {
+            width: 700px;
+        }
+
+        .encryptedPayload,
+        .decryptedResponse,
+        .waitMsg {
+            display: block;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .waitMsg {
+            color: #00f;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .encryptedPayload textarea,
+        .decryptedResponse textarea {
+            width: 1000px;
+            height: 200px;
+            resize: none;
+        }
+
+        input,
+        textarea {
+            outline: none;
+            border: 1px solid #000;
+            padding: 5px;
+        }
+
+        button {
+            padding: 5px;
+            border: 1px solid #000;
+            background-color: #00f;
+            color: #fff;
+        }
+
+        .sourcesInfo {
+            margin-top: 30px;
+        }
+
+        span[linkhref] {
+            color: #00f;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="visibilityHidden">
+    <div class="mainWrapper">
+        <h1>JavaScript Client Encryption / Backend Decryption</h1>
+        <form id="jsForm">
+            <span>Enter message:</span>
+            <input class="inputMessage" type="text" id="message-input" placeholder="<Provide a message that you want to securely transmit to the server>" autocomplete="off" spellcheck="false" />
+            <button type="submit">Encrypt and Submit</button>
+            <br />
+            <div class="encryptedPayload">
+                <div>Payload:</div>
+                <textarea readonly="true" id="encrypted-result" autocomplete="off" spellcheck="false"></textarea>
+            </div>
+            <div class="waitMsg">Please wait . . .</div>
+            <div class="decryptedResponse">
+                <div>Response:</div>
+                <textarea readonly="true" id="decrypted-result" autocomplete="off" spellcheck="false"></textarea>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript">
+        ((function () {
+            document.getElementById("jsForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+                doSubmit();
+            }, false);
+
+            function doEncryptAndSend() {
+                if (!document.getElementById("message-input").value) {
+                    document.querySelector(".waitMsg").style.display = "none";
+                    return;
+                }
+                var encrypt = new EncryptUtil();
+                var encryptedMessage = encrypt.doEncrypt(document.getElementById("message-input").value);
+                var payload = {};
+                payload["encryptedMessage"] = encryptedMessage;
+                document.getElementById("encrypted-result").value = JSON.stringify(payload, null, 4);
+                document.querySelector(".encryptedPayload").style.display = "block";
+                var xhr = new XMLHttpRequest();
+                xhr.addEventListener("readystatechange", function () {
+                    if (this.readyState === 4 && this.status === 200) {
+                        document.getElementById("decrypted-result").value = JSON.stringify(JSON.parse(this.responseText), null, 4);
+                        document.querySelector(".waitMsg").style.display = "none";
+                        document.querySelector(".decryptedResponse").style.display = "block";
+                        document.getElementById("message-input").focus();
+                    }
+                });
+                xhr.open("POST", "https://api.kcak11.com/Crypto", true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                document.querySelector(".decryptedResponse").style.display = "none";
+                document.querySelector(".waitMsg").style.display = "block";
+                xhr.send(JSON.stringify(payload));
+            }
+
+            function doSubmit() {
+                document.querySelector(".waitMsg").style.display = "block";
+                doEncryptAndSend();
+            }
+
+            var scr = document.createElement("script");
+            scr.type = "text/javascript";
+            scr.src = "js/encrypt.min.js?_req=" + ("abcdef0123456789".split("").sort(function () { return Math.random() - Math.random(); }).join(""));
+            var _scr = document.getElementById("k11_script");
+            _scr.parentNode.replaceChild(scr, _scr);
+            var _chk = function () {
+                if (window.EncryptUtil) {
+                    document.querySelector("body").classList.remove("visibilityHidden");
+                    document.getElementById("message-input").focus();
+                    setTimeout(function () {
+                        document.getElementById("message-input").value = "";
+                    }, 10);
+                } else {
+                    setTimeout(_chk, 50);
+                }
+            };
+            _chk();
+        })());
+    </script>
+</body>
+
+</html>
